@@ -29,7 +29,7 @@ export const CATEGORY_IMAGES: Record<string, string> = {
   'Hair & Barbing Services': unsplash('1621605815971-fbc98d665033'),
   Photography: unsplash('1452587925148-ce544e77e70d'),
   'Digital Services': unsplash('1498050108023-c5249f4df085'),
-  'Handmade Products': unsplash('1513495972909-fc0d3027d7e2'),
+  'Handmade Products': unsplash('1506806732259-39c2d0268443'),
   Furniture: unsplash('1505693416388-ac5ce068fe85'),
   'Kitchen & Appliances': unsplash('1556910103-1c02745aae4d'),
   'Housing & Accommodation': unsplash('1560448204-603b3fc33ddc'),
