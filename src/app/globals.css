@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  scrollbar-width: thin;
+}
+
+@layer base {
+  h1, h2, h3 {
+    font-family: var(--font-fraunces);
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid theme('colors.gold.500');
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded bg-forest-600 text-cream px-5 py-2.5 font-medium text-sm hover:bg-forest-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded border border-forest-600 text-forest-600 px-5 py-2.5 font-medium text-sm hover:bg-forest-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 rounded bg-gold-500 text-forest-900 px-5 py-2.5 font-semibold text-sm hover:bg-gold-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .field {
+    @apply w-full rounded border border-ink/15 bg-white px-3.5 py-2.5 text-sm placeholder:text-ink/40 focus:border-forest-500 focus:ring-1 focus:ring-forest-500 outline-none transition-colors;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-ink/80 mb-1.5;
+  }
+
+  .card {
+    @apply rounded border border-ink/10 bg-white shadow-card;
+  }
+
+  /* Small rounded status/condition tag, e.g. "Used", "Delivery available" */
+  .tag {
+    @apply text-[11px] font-medium text-ink/60 border border-ink/10 rounded-sm px-1.5 py-0.5 bg-white;
+  }
+
+  /* Corner ribbon on a listing photo — cohort name, "Free", etc. */
+  .ribbon {
+    @apply absolute top-2 left-2 bg-clay-500 text-cream text-[11px] font-semibold px-2 py-1 rounded-sm leading-none;
+  }
+
+  .ribbon-free {
+    @apply absolute top-2 left-2 bg-forest-600 text-cream text-[11px] font-semibold px-2 py-1 rounded-sm leading-none;
+  }
+
+  /* Price, set in the display face so it reads as the card's focal number */
+  .price {
+    @apply font-display text-lg text-forest-700 tabular-nums;
+  }
+
+  .price-lg {
+    @apply font-display text-3xl text-forest-700 tabular-nums;
+  }
+
+  /* Round category pill for the horizontal category rail */
+  .category-pill {
+    @apply flex flex-col items-center gap-1.5 shrink-0 w-[78px] text-center;
+  }
+
+  .category-pill-icon {
+    @apply w-14 h-14 rounded-full bg-white border border-ink/10 flex items-center justify-center text-2xl group-hover:border-forest-500/50 group-hover:shadow-card-hover transition-all;
+  }
+
+  /* A promo tile on the homepage band */
+  .promo-tile {
+    @apply relative overflow-hidden rounded bg-forest-700 text-cream flex flex-col justify-end p-5;
+  }
+
+  /* Horizontally-scrolling shelf of cards, e.g. "Leaving PAU picks" */
+  .shelf-track {
+    @apply flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
+  }
+
+  .shelf-item {
+    @apply snap-start shrink-0 w-[190px] sm:w-[220px];
+  }
+}

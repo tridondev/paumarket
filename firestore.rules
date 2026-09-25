@@ -1,0 +1,108 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function myProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isApproved() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        myProfile().status == 'approved';
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        myProfile().isAdmin == true;
+    }
+
+    // ---- Users ----
+    // Full profile documents hold email, studentId/matric number, etc. —
+    // never public. Only the account owner and admins may read them.
+    // (Public storefront info is mirrored into /storeProfiles below.)
+    match /users/{uid} {
+      allow read: if isSelf(uid) || isAdmin();
+
+      // A user can create their own profile document at signup.
+      // status must start as 'pending' and isAdmin must start as false —
+      // no one can self-approve or self-promote to admin.
+      allow create: if isSelf(uid)
+        && request.resource.data.status == 'pending'
+        && request.resource.data.isAdmin == false;
+
+      // Users may update their own non-privileged fields (storeName, bio, etc.)
+      // but can never change their own status or isAdmin flag.
+      allow update: if (isSelf(uid)
+          && request.resource.data.status == resource.data.status
+          && request.resource.data.isAdmin == resource.data.isAdmin)
+        || isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    // ---- Store profiles ----
+    // Public mirror of the safe-to-show fields from a user's profile
+    // (displayName, storeName, bio, photoURL, joinedAt). Kept in sync by the
+    // app whenever a user's own profile loads or changes. Never contains
+    // email, phone, matric number, or approval status.
+    match /storeProfiles/{uid} {
+      allow read: if true;
+      allow write: if isSelf(uid);
+    }
+
+    // ---- Listings ----
+    match /listings/{listingId} {
+      // Active listings are public — anyone can browse without an account.
+      // Non-active statuses (draft/pending/sold/suspended/removed) are only
+      // visible to their owner or an admin.
+      allow read: if resource.data.status == 'active'
+        || (isSignedIn() && (isAdmin() || resource.data.sellerId == request.auth.uid));
+
+      allow create: if isApproved()
+        && request.resource.data.sellerId == request.auth.uid;
+
+      allow update: if isAdmin()
+        || (isApproved() && resource.data.sellerId == request.auth.uid);
+
+      allow delete: if isAdmin()
+        || (isApproved() && resource.data.sellerId == request.auth.uid);
+    }
+
+    // ---- Favorites ----
+    // One doc per (user, listing) pair, id `${uid}_${listingId}`. A user can
+    // only ever read/write their own favorites.
+    match /favorites/{favoriteId} {
+      allow read, delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+    }
+
+    // ---- Conversations & messages ----
+    match /conversations/{conversationId} {
+      allow read, update: if isApproved()
+        && request.auth.uid in resource.data.participantIds;
+
+      allow create: if isApproved()
+        && request.auth.uid in request.resource.data.participantIds;
+
+      match /messages/{messageId} {
+        allow read: if isApproved()
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds;
+
+        allow create: if isApproved()
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds
+          && request.resource.data.senderId == request.auth.uid;
+      }
+    }
+  }
+}
